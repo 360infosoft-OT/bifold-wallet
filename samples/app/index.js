@@ -28,6 +28,23 @@ if (!global.atob) {
   global.atob = decode
 }
 
+// Timestamp Logic - Start
+const originalLog = console.log
+const originalWarn = console.warn
+const originalError = console.error
+
+function withTimestamp(logFn) {
+  return (...args) => {
+    const timestamp = new Date().toISOString()
+    logFn(`[${timestamp}]`, ...args)
+  }
+}
+
+console.log = withTimestamp(originalLog)
+console.warn = withTimestamp(originalWarn)
+console.error = withTimestamp(originalError)
+// Timestamp Logic - End
+
 import { initLanguages, translationResources, createApp, MainContainer } from '@bifold/core'
 import { AppRegistry, LogBox } from 'react-native'
 import { container } from 'tsyringe'
