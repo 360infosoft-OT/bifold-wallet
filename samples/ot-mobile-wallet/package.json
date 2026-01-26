@@ -1,0 +1,40 @@
+{
+  "name": "ot-mobile-wallet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OpenText Mobile Wallet - Built on Bifold Core",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jasbir-s-minhas/bifold-wallet.git",
+    "directory": "samples/ot-mobile-wallet"
+  },
+  "homepage": "https://github.com/jasbir-s-minhas/bifold-wallet/",
+  "scripts": {
+    "android": "react-native run-android --active-arch-only",
+    "gradle": "./android/gradlew --project-dir=./android --no-daemon",
+    "android:setup": "cd android && ./gradlew app:dependencies --write-locks",
+    "ios:setup": "bundle install && cd ios && bundle exec pod install",
+    "ios": "react-native run-ios --scheme OTWallet",
+    "setup": "yarn android:setup && yarn ios:setup",
+    "start": "react-native start --reset-cache"
+  },
+  "dependencies": {
+    "@bifold/core": "workspace:*",
+    "@bifold/oca": "workspace:*",
+    "@credo-ts/anoncreds": "0.5.19",
+    "@credo-ts/askar": "0.5.19",
+    "@credo-ts/core": "0.5.19",
+    "@credo-ts/indy-sdk-to-askar-migration": "0.5.19",
+    "@credo-ts/indy-vdr": "0.5.19",
+    "@credo-ts/openid4vc": "0.5.19",
+    "react": "18.3.1",
+    "react-native": "0.76.5"
+  },
+  "devDependencies": {
+    "@react-native/babel-preset": "0.76.5",
+    "@react-native/metro-config": "0.76.5",
+    "@react-native/typescript-config": "0.76.5",
+    "@types/react": "^18.2.6",
+    "typescript": "~5.0.4"
+  }
+}
