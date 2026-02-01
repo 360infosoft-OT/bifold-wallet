@@ -1,35 +1,61 @@
 /**
- * OpenText Mobile Wallet - Token Override Configuration
+ * OpenText Mobile Wallet - Container Setup
  *
- * This file registers custom screens, components, and configuration
- * using Bifold's dependency injection system.
- *
- * See: wallet-governance/docs/architecture/screen-mapping.md for full mapping
+ * This file sets up the dependency injection container for OT Mobile Wallet.
+ * It creates a child container from Bifold's MainContainer and registers
+ * custom token overrides for OpenText-specific functionality.
  */
 
-import { container } from 'tsyringe'
-// import * as TOKENS from '@bifold/core/tokens'
+import { Container } from '@bifold/core/src/container-api'
+// import * as TOKENS from '@bifold/core/src/container-api'
 
-// TODO: Phase 1 - Import OpenText theme
-// import { openTextTheme } from './theme'
-// container.register(TOKENS.THEME, { useValue: openTextTheme })
+/**
+ * OTWalletContainer
+ *
+ * Extends Bifold's core functionality with OpenText-specific customizations.
+ * Currently uses default Bifold configuration - customizations can be added by
+ * registering token overrides in the init() method.
+ */
+export class OTWalletContainer implements Container {
+  private _container: Container['container']
 
-// TODO: Phase 3 - Register custom screens
-// import { OTTourScreens } from './screens/OTTourScreens'
-// container.register(TOKENS.SCREEN_ONBOARDING, { useValue: OTTourScreens })
+  public get container(): Container['container'] {
+    return this._container
+  }
 
-// import { OTHomeScreen } from './screens/OTHomeScreen'
-// container.register(TOKENS.SCREEN_HOME, { useValue: OTHomeScreen })
+  public constructor(bifoldContainer: Container) {
+    // Create child container that inherits all Bifold defaults
+    this._container = bifoldContainer.container.createChildContainer()
+  }
 
-// TODO: Phase 3 - Conditional scan screen override (if custom QR format)
-// import { OTScanScreen } from './screens/OTScanScreen'
-// container.register(TOKENS.SCREEN_SCAN, { useValue: OTScanScreen })
+  public init(): Container {
+    // Register custom token overrides here
+    // Examples:
+    //
+    // Custom theme:
+    // import { openTextTheme } from './theme'
+    // this.container.registerInstance(TOKENS.THEME, openTextTheme)
+    //
+    // Custom onboarding:
+    // import { OTTourScreens } from './screens/OTTourScreens'
+    // this.container.registerInstance(TOKENS.SCREEN_ONBOARDING, OTTourScreens)
+    //
+    // Custom home screen:
+    // import { OTHomeScreen } from './screens/OTHomeScreen'
+    // this.container.registerInstance(TOKENS.SCREEN_HOME, OTHomeScreen)
 
-// TODO: Phase 4 - Configuration
-// container.register(TOKENS.CONFIG_MEDIATOR, {
-//   useValue: {
-//     mediatorInvitationUrl: process.env.MEDIATOR_INVITATION_URL
-//   }
-// })
+    return this
+  }
 
-export default container
+  public resolve<K extends keyof import('@bifold/core/src/container-api').TokenMapping>(
+    token: K
+  ): import('@bifold/core/src/container-api').TokenMapping[K] {
+    return this.container.resolve(token) as import('@bifold/core/src/container-api').TokenMapping[K]
+  }
+
+  public resolveAll<K extends keyof import('@bifold/core/src/container-api').TokenMapping>(
+    token: K
+  ): Array<import('@bifold/core/src/container-api').TokenMapping[K]> {
+    return this.container.resolveAll(token) as Array<import('@bifold/core/src/container-api').TokenMapping[K]>
+  }
+}

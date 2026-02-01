@@ -27,14 +27,34 @@
     "@credo-ts/indy-sdk-to-askar-migration": "0.5.19",
     "@credo-ts/indy-vdr": "0.5.19",
     "@credo-ts/openid4vc": "0.5.19",
-    "react": "18.3.1",
-    "react-native": "0.76.5"
+    "@credo-ts/push-notifications": "0.7.1",
+    "@credo-ts/question-answer": "0.5.19",
+    "@credo-ts/react-hooks": "0.6.1",
+    "@credo-ts/react-native": "0.5.19",
+    "@credo-ts/webvh": "0.5.19",
+    "expo": "*",
+    "expo-secure-store": "*",
+    "react": "*",
+    "react-native": "*",
+    "tsyringe": "~4.8.0"
   },
   "devDependencies": {
+    "@babel/core": "~7.28.6",
+    "@react-native-community/cli": "20.0.0",
+    "@react-native-community/cli-platform-android": "20.0.0",
+    "@react-native-community/cli-platform-ios": "20.0.0",
     "@react-native/babel-preset": "0.76.5",
     "@react-native/metro-config": "0.76.5",
     "@react-native/typescript-config": "0.76.5",
     "@types/react": "^18.2.6",
     "typescript": "~5.0.4"
+  },
+  "engines": {
+    "node": ">=20.19.2 <21.0.0",
+    "yarn": "4.9.2"
+  },
+  "packageManager": "yarn@4.9.2",
+  "installConfig": {
+    "hoistingLimits": "workspaces"
   }
 }
