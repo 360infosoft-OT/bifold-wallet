@@ -34,12 +34,13 @@ if (typeof global.Buffer === 'undefined') {
   global.Buffer = Buffer
 }
 
-import { initLanguages, translationResources, createApp, MainContainer } from '@bifold/core'
+import { initLanguages, translationResources, MainContainer } from '@bifold/core'
 import { AppRegistry, LogBox } from 'react-native'
 import { container } from 'tsyringe'
 
 import { name as appName } from './app.json'
 import { AppContainer } from './container-imp'
+import createApp from './create-app'
 
 LogBox.ignoreAllLogs()
 
