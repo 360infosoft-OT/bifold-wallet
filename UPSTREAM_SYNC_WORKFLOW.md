@@ -2,6 +2,33 @@
 
 This document describes the workflow for syncing OpenText Mobile Wallet with upstream Bifold updates.
 
+## 🎯 Quick Reference
+
+**Daily Development:**
+```bash
+# ALWAYS work on ot-mobile-wallet branch
+git checkout ot-mobile-wallet
+# Make changes, commit, push...
+```
+
+**Weekly/Monthly Sync:**
+```bash
+# 1. Sync main via GitHub UI (click "Sync fork" button) OR:
+git checkout main && git fetch upstream && git reset --hard upstream/main
+
+# 2. Update your work
+git checkout ot-mobile-wallet && git rebase main
+
+# 3. Test and push
+yarn install && yarn build && yarn android
+git push origin ot-mobile-wallet --force-with-lease
+```
+
+**NEVER:**
+- ❌ Don't commit to main branch
+- ❌ Don't add files to main branch
+- ❌ Don't push to upstream remote (read-only)
+
 ## Repository Structure
 
 ```
@@ -9,41 +36,107 @@ Origin (Your Fork):     https://github.com/360infosoft-OT/bifold-wallet.git
 Upstream (Bifold):      https://github.com/openwallet-foundation/bifold-wallet.git
 
 Local Branches:
-  - main                ← Your main branch (tracks origin/main)
-  - ot-mobile-wallet    ← Feature branch for OT wallet development
+  - main                ← EXACT MIRROR of upstream/main (read-only, never commit here)
+  - ot-mobile-wallet    ← YOUR WORKING BRANCH (all development happens here)
+  - backup/main-before-restructure ← Safety backup of old main state
 ```
+
+**IMPORTANT:** Main branch is now a pure mirror of upstream. All your work (including documentation) lives in the `ot-mobile-wallet` branch.
 
 ## Directory Structure
 
+**Main Branch (mirrors upstream):**
 ```
 samples/
-├── app/                     ← Bifold reference (DO NOT MODIFY)
-│   └── container-imp.tsx    ← Reference implementation patterns
-└── ot-mobile-wallet/        ← Your OpenText customizations
+└── app/                     ← Bifold reference implementation
+```
+
+**ot-mobile-wallet Branch (your work):**
+```
+samples/
+├── app/                     ← Bifold reference (inherited from main)
+└── ot-mobile-wallet/        ← Your OpenText customizations (ONLY in this branch)
     └── src/
         └── container-setup.ts  ← Your token overrides
+
+Root Directory:
+├── CLAUDE.md                         ← Project documentation
+├── UPSTREAM_SYNC_WORKFLOW.md         ← This file
+└── SYNC_IMPLEMENTATION_SUMMARY.md    ← Implementation record
 ```
+
+**Note:** Documentation files and ot-mobile-wallet/ directory only exist in the `ot-mobile-wallet` branch, NOT in `main`.
 
 ## Weekly/Monthly Sync Workflow
 
-### 1. Prepare for Sync
+### Option A: GitHub UI Sync (Recommended - Easiest)
 
+**Step 1: Sync on GitHub**
+1. Go to: https://github.com/360infosoft-OT/bifold-wallet
+2. You'll see: "This branch is X commits behind openwallet-foundation:main"
+3. Click **"Sync fork"** button
+4. Click **"Update branch"**
+5. GitHub will fast-forward origin/main to match upstream/main
+
+**Step 2: Pull Locally**
 ```bash
-# Ensure you're on main branch
+# Pull the synced main
 git checkout main
+git pull origin main
 
-# Commit or stash any work in progress
-git status
-git stash  # if needed
-
-# Fetch latest from upstream
-git fetch upstream
+# Review what changed
+git log -10 --oneline
 ```
 
-### 2. Review Upstream Changes
+**Step 3: Update Your Work Branch**
+```bash
+# Rebase your work on updated main
+git checkout ot-mobile-wallet
+git rebase main
+
+# Resolve conflicts if any (rare)
+# Then: git rebase --continue
+```
+
+**Step 4: Test & Push**
+```bash
+# Test your wallet
+yarn install && yarn build
+cd samples/ot-mobile-wallet && yarn android
+
+# Push updated branch
+git push origin ot-mobile-wallet --force-with-lease
+```
+
+### Option B: Command Line Sync (Alternative)
+
+**If you prefer terminal workflow:**
 
 ```bash
-# See what's new in upstream (last 20 commits)
+# 1. Update main from upstream
+git checkout main
+git fetch upstream
+git reset --hard upstream/main  # Force main to match upstream
+git push origin main --force-with-lease  # Keep origin in sync
+
+# 2. Review changes
+git log -10 --oneline
+
+# 3. Update your work branch
+git checkout ot-mobile-wallet
+git rebase main
+
+# 4. Test and push
+yarn install && yarn build
+cd samples/ot-mobile-wallet && yarn android
+git push origin ot-mobile-wallet --force-with-lease
+```
+
+### Review Upstream Changes (Optional)
+
+```bash
+# See what's new in upstream (before syncing)
+git fetch upstream
 git log main..upstream/main --oneline -20
 
 # See changes in core package (most important)
@@ -56,42 +149,7 @@ git log main..upstream/main --oneline -- samples/app/
 git log main..upstream/main --grep="BREAKING"
 ```
 
-### 3. Merge Upstream Changes
-
-```bash
-# Merge upstream main into your main
-git merge upstream/main
-
-# If there are conflicts (unlikely):
-# - Resolve them (focus on packages/core changes)
-# - Do NOT modify samples/app/ unless necessary
-# - Keep ot-mobile-wallet/ unchanged
-```
-
-### 4. Update Dependencies
-
-```bash
-# Install any new dependencies
-yarn install
-
-# Rebuild all packages
-yarn build
-```
-
-### 5. Test Your OT Wallet
-
-```bash
-cd samples/ot-mobile-wallet
-
-# Test that everything still works
-yarn android
-# OR
-yarn ios
-
-# Verify recent bug fixes work (e.g., #1750 back button fix)
-```
-
-### 6. Review New Patterns
+### Review New Patterns (Optional)
 
 ```bash
 # Check if reference app has new patterns you should adopt
@@ -101,50 +159,21 @@ git diff HEAD~1 samples/app/container-imp.tsx
 # Consider if any apply to OT wallet
 ```
 
-### 7. Update Your Branch
-
-```bash
-# Switch to your feature branch
-git checkout ot-mobile-wallet
-
-# Rebase on updated main
-git rebase main
-
-# Test again
-cd samples/ot-mobile-wallet
-yarn android
-```
-
-### 8. Push Updates
-
-```bash
-# Push updated main to origin
-git checkout main
-git push origin main
-
-# Push updated feature branch
-git checkout ot-mobile-wallet
-git push origin ot-mobile-wallet --force-with-lease
-```
-
 ## Current Sync Status
 
-**Last Sync Date:** 2026-02-01
+**Last Restructure:** 2026-02-01
+**Last Sync:** 2026-02-01
 
-**Your Local State:**
-- Local main: `435de05d` - "docs: add CLAUDE.md for Claude AI context"
-- Feature branch: `ot-mobile-wallet`
-- Custom sample: `samples/ot-mobile-wallet/` (473 lines, 9 files)
+**Branch Structure (After Restructuring):**
+- `main`: `4c39a4b0` - Exact mirror of upstream (✅ synced)
+- `ot-mobile-wallet`: `9f2d85f1` - Your working branch (4 commits ahead of main)
+- `backup/main-before-restructure`: `6b0a8c8f` - Safety backup of old state
 
-**Upstream State:**
-- Upstream main: `4c39a4b0` - "chore(release): new version (#1772)"
-- Commits behind: 5 commits
-- Notable upstream changes since your branch:
-  - `4c39a4b0` - chore(release): new version (#1772)
-  - `fecd99e2` - fix(metro): update core package.json exports (#1771)
-  - `e7585e3d` - chore: Remove Card11 and CredentialCard (#1748)
-  - `1422cac7` - chore(release): new version (#1770)
-  - `e26f1ff0` - chore: bump i18next (#1769)
+**What Changed:**
+- ✅ Main now mirrors upstream exactly (no documentation, no ot-mobile-wallet/)
+- ✅ All work moved to ot-mobile-wallet branch (includes CLAUDE.md, etc.)
+- ✅ Rebased ot-mobile-wallet on latest upstream (5 new commits incorporated)
+- ✅ Zero conflicts expected on future syncs
 
 ## What Gets Updated Automatically
 
@@ -175,10 +204,13 @@ When you pull from upstream, these inherit changes automatically:
 
 ## What Stays Isolated
 
-🔧 **samples/ot-mobile-wallet/** (Your code)
-- Never touched by upstream
-- No merge conflicts
-- Your customizations safe
+🔧 **ot-mobile-wallet Branch (Your code)**
+- samples/ot-mobile-wallet/ (never touched by upstream)
+- CLAUDE.md (project documentation)
+- UPSTREAM_SYNC_WORKFLOW.md (this file)
+- SYNC_IMPLEMENTATION_SUMMARY.md (implementation record)
+- No merge conflicts ever
+- Your customizations completely safe
 
 ## Comparison Commands
 
@@ -295,12 +327,15 @@ git push origin fix/my-bug-fix
 
 | Benefit | Impact |
 |---------|--------|
-| Zero merge conflicts in core | 85% of changes just work |
+| Main = upstream exactly | Can see upstream changes with `git log main` |
+| Zero-effort syncs | Just click "Sync fork" button on GitHub |
+| Zero merge conflicts | Main never diverges from upstream |
+| Easy comparison | `git diff main..ot-mobile-wallet` shows all customizations |
+| Clean history | Clear separation between upstream and custom code |
+| No accidental changes to main | All work happens on feature branch |
+| Can switch to any upstream version | `git reset --hard upstream/v2.12.0` |
 | Automatic bug fixes | Security updates flow through |
-| Clear separation | Easy to see what's custom |
-| Can upgrade anytime | Low risk, high confidence |
 | Can contribute back | PRs to core are clean |
-| Multiple wallets possible | Can add more branded variants |
 
 ## Next Steps
 
