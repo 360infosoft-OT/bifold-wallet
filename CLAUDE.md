@@ -19,7 +19,7 @@ This is a Yarn workspaces monorepo with two main directories:
 
 - **samples/** - Wallet implementations:
   - `app` - Reference Bifold wallet implementation
-  - `ot-mobile-wallet` - OpenText wallet (custom branded wallet)
+  - `ot-wallet-app` - OpenText wallet (custom branded wallet)
 
 ## Common Commands
 
@@ -56,24 +56,84 @@ yarn prettier --write .
 
 ### Running Sample Apps
 
-From `samples/app/` or `samples/ot-mobile-wallet/`:
+#### Quick Start (if packages already built)
+
+If you've already built the packages, run directly from the sample app directory:
 
 ```bash
-# Setup iOS dependencies
-yarn ios:setup
+# Navigate to sample app
+cd samples/ot-wallet-app/
 
-# Setup Android dependencies
+# Setup Android dependencies (first time only)
 yarn android:setup
 
-# Start Metro bundler
+# Setup iOS dependencies (first time only, macOS only)
+yarn ios:setup
+
+# Start Metro bundler (Terminal 1)
 yarn start
 
-# Run on iOS (in separate terminal)
-yarn ios
-
-# Run on Android (in separate terminal)
+# Run on Android (Terminal 2)
 yarn android
+
+# Run on iOS (Terminal 2, macOS only)
+yarn ios
 ```
+
+#### Full Setup (first time or after package changes)
+
+If this is your first time or you've made changes to packages (core, oca, etc.):
+
+```bash
+# 1. Build all packages from repository root
+cd ~/workspace/acg-did/bifold-wallet
+yarn build
+
+# 2. Navigate to ot-wallet-app
+cd samples/ot-wallet-app
+
+# 3. Setup native dependencies (first time only)
+yarn android:setup   # For Android
+yarn ios:setup       # For iOS (macOS only)
+
+# 4. Start Metro bundler (Terminal 1)
+yarn start
+
+# 5. Run the app (Terminal 2)
+yarn android   # For Android
+yarn ios       # For iOS
+```
+
+#### When to Run Each Command
+
+**`yarn build` (from root)** - Run when:
+- First time setup
+- You've modified code in `packages/core` or `packages/oca`
+- After pulling upstream changes
+- After switching branches
+- Build artifacts in `packages/*/lib` need to be regenerated
+
+**`yarn android:setup` / `yarn ios:setup`** - Run when:
+- First time running the app
+- Native dependencies have changed
+- After cleaning node_modules
+- Gradle or Pods need to be updated
+
+**`yarn start`** - Run:
+- Every time you want to develop (keeps Metro bundler running)
+- After changes to JavaScript/TypeScript code
+
+**`yarn android` / `yarn ios`** - Run:
+- To build and install the app on device/emulator
+- After native code changes
+- After Metro bundler is already running
+
+#### Reference Sample vs OT Wallet
+
+- **`samples/app/`** - Reference Bifold wallet (unbranded)
+- **`samples/ot-wallet-app/`** - OpenText branded wallet (OT Wallet)
+
+Both use the same commands, just run them from the respective directory.
 
 ### Testing
 
@@ -160,7 +220,7 @@ To create a branded wallet:
    - `TOKENS.CONFIG` for feature flags
 4. Reuse 85%+ of Bifold's production screens
 
-**See `samples/ot-mobile-wallet/` for a minimal customization example.**
+**See `samples/ot-wallet-app/` for a minimal customization example.**
 
 ## Credo Integration
 
@@ -362,11 +422,15 @@ Patches are in `.yarn/patches/`. When upgrading Credo, reapply or regenerate pat
 
 Sample apps need `.env` file:
 ```bash
+# samples/ot-wallet-app/.env
+MEDIATOR_URL=https://...
+
+# Or for reference app
 # samples/app/.env
 MEDIATOR_URL=https://...
 ```
 
-**Never commit .env files** - they may contain environment-specific URLs.
+**Never commit .env files** - they may contain environment-specific URLs or credentials.
 
 ### OpenID4VC Credential Refresh
 
@@ -407,7 +471,7 @@ bifold-wallet/
 │   │   ├── android/                  # Android native
 │   │   ├── ios/                      # iOS native
 │   │   └── .env.example              # Config template
-│   └── ot-mobile-wallet/             # OpenText wallet
+│   └── ot-wallet-app/             # OpenText wallet
 │       └── src/
 │           └── container-setup.ts    # Token overrides
 ├── .github/workflows/                # CI/CD
@@ -417,20 +481,23 @@ bifold-wallet/
 
 ## Customization Checklist
 
-When creating a new branded wallet:
+When creating a new branded wallet (like ot-wallet-app):
 
 1. **Create sample directory**: `samples/your-wallet/`
-2. **Copy package.json** from `ot-mobile-wallet` or `app`
+2. **Copy package.json** from `samples/ot-wallet-app/` (OpenText example) or `samples/app/` (reference)
 3. **Update workspace dependency**: `"@bifold/core": "workspace:*"`
 4. **Create container-setup.ts** with token overrides:
    - Theme (colors, logos, typography)
    - Custom screens (onboarding, home, etc.)
    - Configuration (feature flags, mediator URL)
-5. **Copy native projects** from `app/android/` and `app/ios/`
+5. **Copy native projects** from `samples/ot-wallet-app/android/` and `samples/ot-wallet-app/ios/`
 6. **Update bundle identifiers** and app names in native projects
 7. **Create .env file** with mediator configuration
-8. **Test build**: `yarn install && yarn build`
-9. **Run app**: `yarn ios` / `yarn android`
+8. **Build packages from root**: `cd ~/workspace/acg-did/bifold-wallet && yarn build`
+9. **Setup native dependencies**: `cd samples/your-wallet && yarn android:setup`
+10. **Run app**: `yarn start` (Terminal 1) then `yarn android` (Terminal 2)
+
+**Example: OT Wallet** - See `samples/ot-wallet-app/` for a working example of a branded wallet with custom theme and configuration.
 
 ## Troubleshooting Common Issues
 
